@@ -43,7 +43,10 @@ try {
 
     // Build placeholders for IN clause
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-
+        $rows = $db->fetchAll(
+            "SELECT ... WHERE article_id IN ($placeholders)",
+            $ids
+        );
     // Perform delete in a transaction; ON DELETE CASCADE will remove assessments
     $deleted = 0;
     $db->transaction(function (Db $conn) use ($ids, $placeholders, &$deleted): void {

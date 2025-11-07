@@ -35,6 +35,10 @@ try {
 
     // Find latest assessment ids for the provided article ids
     $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $db->fetchAll(
+            "SELECT ... WHERE article_id IN ($placeholders)",
+            $ids
+        );
     $rows = $db->fetchAll(
         "SELECT a.article_id, a.id AS assessment_id, a.status
          FROM assessments a

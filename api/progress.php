@@ -33,7 +33,12 @@ try {
         throw new InvalidArgumentException('article_ids must be a non-empty array.');
     }
 
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    // In api/progress.php
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $db->fetchAll(
+            "SELECT ... WHERE article_id IN ($placeholders)",
+            $ids
+);
     $rows = $db->fetchAll(
         "SELECT article_id, status
          FROM assessments

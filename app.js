@@ -301,7 +301,7 @@ function renderArticles() {
         // Create ServiceNow article link
         //const articleUrl = `https://universityofbirmingham.service-now.com/kb_view.do?sysparm_article=${article.kb_number}`;
         const articleUrl = `${SERVICE_NOW_BASE}/kb_view.do?sysparm_article=${encodeURIComponent(kbNumber)}`;
-        const kbNumberLink = `<a href="${articleUrl}" target="_blank" rel="noopener noreferrer" class="kb-number-link">${article.kb_number}</a>`;
+        const kbNumberLink = `<a href="${articleUrl}"...>${article.kb_number}</a>`;
 
         return `
             <tr data-article-id="${article.id}"${classAttr}>
