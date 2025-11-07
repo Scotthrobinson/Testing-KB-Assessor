@@ -34,13 +34,22 @@ try {
 
     // If explicitly requested full, or override provided, honor that.
     // Otherwise, if no articles exist locally, do a full fetch (ignore last_fetch_at).
-    if ($full || $overrideSince !== null) {
-        $since = $overrideSince ?: null;
-    } else {
-        $countRow = $db->fetchOne('SELECT COUNT(*) AS c FROM articles');
-        $hasArticles = (int)($countRow['c'] ?? 0) > 0;
-        $since = $hasArticles ? $lastFetchAt : null;
-    }
+    $lastFetchRow = $db->fetchOne('SELECT value FROM app_state WHERE key = :key', ['key' => 'last_fetch_at']);
+$lastFetchAt = $lastFetchRow['value'] ?? null;
+
+// Determine the 'since' timestamp for filtering
+if ($overrideSince !== null) {
+    // Explicit override provided
+    $since = $overrideSince;
+} elseif ($full) {
+    // Full fetch requested - fetch everything
+    $since = null;
+} else {
+    // Incremental fetch - use last fetch time if articles exist, otherwise fetch all
+    $countRow = $db->fetchOne('SELECT COUNT(*) AS c FROM articles');
+    $hasArticles = (int)($countRow['c'] ?? 0) > 0;
+    $since = $hasArticles ? $lastFetchAt : null;
+}
 
     $articles = $serviceNow->fetchUpdatedArticles($since);
 
