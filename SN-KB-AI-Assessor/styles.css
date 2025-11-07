@@ -1,0 +1,494 @@
+:root {
+    --surface: #ffffff;
+    --bg: #f6f7fb;
+    --shadow: 0 2px 12px rgba(16,24,40,0.08);
+    --shadow-hover: 0 6px 20px rgba(16,24,40,0.12);
+    --radius: 12px;
+}
+
+body {
+    background-color: var(--bg);
+}
+
+main.container-fluid {
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+/* Navbar polish */
+.navbar {
+    background: linear-gradient(135deg, #2780e3 0%, #1e6bc4 100%) !important;
+}
+
+
+/* Recommendation controls */
+#recommendation-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#recommendation-controls .btn {
+    font-size: 0.875rem;
+
+/* KB Number link styling */
+.kb-number-link {
+    color: #2780e3;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.kb-number-link:hover {
+    color: #1e6bc4;
+    text-decoration: underline;
+}
+}
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    font-size: 1.25rem;
+}
+
+.navbar-brand i {
+    font-size: 1.3rem;
+}
+
+.navbar .navbar-text {
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+.navbar .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Metrics cards */
+.metric-card {
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    background: white;
+    cursor: pointer;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transition: height 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.metric-card:hover::before {
+    height: 6px;
+}
+
+.metric-card.filtered {
+    border: 2px solid;
+    transform: translateY(-2px);
+}
+
+.metric-card.filtered::before {
+    height: 6px;
+}
+
+/* Metric card colors */
+.metric-total::before { background: #6c757d; }
+.metric-total .metric-icon {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+.metric-total.filtered { border-color: #6c757d; }
+
+.metric-needs::before { background: #ffc107; }
+.metric-needs .metric-icon {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+.metric-needs.filtered { border-color: #ffc107; }
+
+.metric-assessed::before { background: #28a745; }
+.metric-assessed .metric-icon {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+.metric-assessed.filtered { border-color: #28a745; }
+
+.metric-running::before { background: #007bff; }
+.metric-running .metric-icon {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+.metric-running.filtered { border-color: #007bff; }
+
+.metric-errors::before { background: #dc3545; }
+.metric-errors .metric-icon {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+.metric-errors.filtered { border-color: #dc3545; }
+
+.metric-notassessed::before { background: #6c757d; }
+.metric-notassessed .metric-icon {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+.metric-notassessed.filtered { border-color: #6c757d; }
+
+/* Metric card content */
+.metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.metric-icon i {
+    color: inherit;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #2c3e50;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Metric card animations */
+.metric-card:active {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    .metric-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+}
+
+/* Controls row spacing for wrap-on-small screens */
+#controls-row .btn {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#controls-row .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#controls-row .btn i {
+    margin-right: 0.25rem;
+}
+
+/* Table surface */
+.table-responsive {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* Sticky table header within responsive container */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 2;
+}
+
+/* Row hover */
+.table-hover tbody tr:hover {
+    background-color: #f3f5fa;
+}
+
+/* Center the verdict column */
+#articles-table td[data-column="verdict"] {
+    text-align: center;
+}
+
+/* Sortable headers */
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+th.sortable:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+th.sortable .sort-indicator {
+    font-size: 0.75rem;
+    opacity: 0.3;
+    margin-left: 6px;
+    transition: opacity 0.2s;
+}
+
+th.sortable.active {
+    background-color: rgba(13, 110, 253, 0.05);
+    font-weight: 600;
+}
+
+th.sortable.active .sort-indicator {
+    opacity: 1;
+    color: #0d6efd;
+}
+
+td, th {
+    vertical-align: middle;
+}
+
+/* Progress bar polish */
+#assessment-progress-wrapper {
+    border-radius: 999px;
+}
+#assessment-progress {
+    border-radius: 999px;
+}
+
+/* Alerts */
+.alert {
+    box-shadow: var(--shadow);
+}
+
+/* Status coloring for rows */
+#articles-table tbody tr.running td,
+#articles-table tbody tr.running td * {
+    color: #0d6efd;
+}
+
+#articles-table tbody tr.error td,
+#articles-table tbody tr.error td * {
+    color: #dc3545;
+}
+
+#articles-table tbody tr.done td,
+#articles-table tbody tr.done td * {
+    color: #198754;
+}
+
+/* Metric cards - clickable */
+#metrics-row .card {
+    cursor: pointer;
+}
+
+#metrics-row .card.filtered {
+    border: 2px solid #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* Search and filter controls */
+#search-box:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+#clear-search {
+    border-left: 0;
+}
+
+/* Toast notifications */
+.toast {
+    min-width: 300px;
+}
+
+.toast-header {
+    font-weight: 600;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-running {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.status-badge.status-done {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-badge.status-error {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.status-badge.status-queued {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+/* FontAwesome icon spacing in badges */
+.status-badge i {
+    margin-right: 4px;
+}
+
+/* Confirmation modal styling */
+.modal-confirm .modal-header {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.modal-confirm .modal-body {
+    padding-top: 0;
+}
+
+.modal-confirm .modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 2rem;
+}
+
+.modal-confirm.modal-danger .modal-icon {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.modal-confirm.modal-warning .modal-icon {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.modal-confirm .modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+}
+
+.modal-confirm .modal-body p {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.modal-confirm .modal-footer {
+    border-top: 0;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+/* Empty state styling */
+#empty-state svg {
+    opacity: 0.5;
+}
+
+/* Copy button styling */
+.copy-btn {
+    padding: 2px 8px;
+    font-size: 0.875rem;
+    margin-left: 8px;
+}
+
+.copy-btn.copied {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+/* Keyboard shortcut hint */
+.kbd-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    z-index: 1050;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.kbd-hint.show {
+    opacity: 1;
+}
+
+kbd {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 0.875em;
+    font-family: monospace;
+}
+
+/* Recommendation checkboxes styling */
+#assessment-recommendations li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#assessment-recommendations li:last-child {
+    border-bottom: none;
+}
+
+#assessment-recommendations .form-check-input {
+    cursor: pointer;
+    margin-top: 0.25rem;
+}
+
+#assessment-recommendations .form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+#assessment-recommendations .form-check-input:checked + .form-check-label {
+    font-weight: 500;
+}
+
+/* Rewrite result modal styling */
+#rewriteResultModal .modal-body {
+    font-size: 0.95rem;
+}
+
+#rewriteResultModal .border {
+    border-radius: 0.375rem;
+}

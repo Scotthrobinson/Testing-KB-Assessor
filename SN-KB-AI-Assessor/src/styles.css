@@ -1,0 +1,18 @@
+body {
+    background-color: #f8f9fa;
+}
+
+#articles-table tbody tr.running td,
+#articles-table tbody tr.running td * {
+    color: #0d6efd;
+}
+
+#articles-table tbody tr.error td,
+#articles-table tbody tr.error td * {
+    color: #dc3545;
+}
+
+#articles-table tbody tr.done td,
+#articles-table tbody tr.done td * {
+    color: #198754;
+}

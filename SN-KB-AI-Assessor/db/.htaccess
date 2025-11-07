@@ -1,0 +1,12 @@
+# Deny all access to the database directory
+# This prevents direct HTTP access to SQLite database files
+
+<Files "*">
+    Require all denied
+</Files>
+
+# Alternative syntax for Apache 2.2 and earlier
+# <Files "*">
+#     Order allow,deny
+#     Deny from all
+# </Files>
