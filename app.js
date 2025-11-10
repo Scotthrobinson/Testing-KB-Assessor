@@ -73,6 +73,7 @@ const state = {
     lastFetch: null,
     isFetching: false,
     isAssessing: false,
+    cancelRequested: false, // ADD THIS LINE
     sort: loadSavedSort(),
     progress: {
         total: 0,
@@ -300,8 +301,9 @@ function renderArticles() {
         
         // Create ServiceNow article link
         //const articleUrl = `https://universityofbirmingham.service-now.com/kb_view.do?sysparm_article=${article.kb_number}`;
-        const articleUrl = `${SERVICE_NOW_BASE}/kb_view.do?sysparm_article=${encodeURIComponent(kbNumber)}`;
-        const kbNumberLink = `<a href="${articleUrl}"...>${article.kb_number}</a>`;
+        const kbNumber = article.kb_number || '';
+        const articleUrl = `${SERVICE_NOW_BASE}/kb_view.do?sysparm_article=${kbNumber}`;
+        const kbNumberLink = `<a href="${articleUrl}" target="_blank" rel="noopener noreferrer">${kbNumber}</a>`;
 
         return `
             <tr data-article-id="${article.id}"${classAttr}>
@@ -510,9 +512,10 @@ function clearAllFilters() {
     renderArticles();
 }
 
+// Then update the handleMetricClick function to handle 'total':
 function handleMetricClick(metricType) {
-    // Toggle filter
-    if (state.activeMetricFilter === metricType) {
+    // Toggle filter - if clicking on total OR clicking the same metric again, clear all filters
+    if (state.activeMetricFilter === metricType || metricType === 'total') {
         clearAllFilters();
         return;
     }
@@ -748,19 +751,27 @@ async function loadArticles() {
 }
 
 async function fetchUpdates(full = false) {
+    console.log('[fetchUpdates] Called with full =', full);
     try {
         state.isFetching = true;
         renderFetchButton();
+        
+        const payload = full ? { full: true } : {};
+        console.log('[fetchUpdates] Sending payload:', payload);
+        
         const result = await fetchJSON(API.fetch, {
             method: "POST",
-            body: JSON.stringify(full ? { full: true } : {})
+            body: JSON.stringify(payload)
         });
+        
+        console.log('[fetchUpdates] Received result:', result);
+        
         state.lastFetch = result.last_fetch_at ?? new Date().toISOString();
         await loadArticles();
         renderLastFetch();
-        showAlert(`Fetched ${result.fetched ?? 0} articles.`, "success");
+        showAlert(`Fetched ${result.fetched ?? 0} articles (${result.inserted ?? 0} new, ${result.updated ?? 0} updated).`, "success");
     } catch (error) {
-        console.error(error);
+        console.error('[fetchUpdates] Error:', error);
         showAlert("Failed to fetch updates. Check console for details.");
     } finally {
         state.isFetching = false;
@@ -832,10 +843,23 @@ async function assessArticle(articleId) {
     }
 }
 
+// Update the processBatch function to check for cancellation (around line 530):
 async function processBatch(queue) {
+    // Check if cancellation was requested
+    if (state.cancelRequested) {
+        state.isAssessing = false;
+        state.cancelRequested = false; // Reset flag
+        if (elements.cancelButton) elements.cancelButton.disabled = true;
+        state.selected.clear();
+        renderSelectionState();
+        renderProgress();
+        await loadArticles();
+        showToast('Assessment cancelled', 'warning');
+        return;
+    }
+
     if (queue.length === 0) {
         state.isAssessing = false;
-        // disable cancel button when finished
         if (elements.cancelButton) elements.cancelButton.disabled = true;
         state.selected.clear();
         renderSelectionState();
@@ -850,6 +874,19 @@ async function processBatch(queue) {
     
     // Process all articles in the batch concurrently
     await Promise.all(batch.map(articleId => assessArticle(articleId)));
+    
+    // Check for cancellation again before proceeding to next batch
+    if (state.cancelRequested) {
+        state.isAssessing = false;
+        state.cancelRequested = false;
+        if (elements.cancelButton) elements.cancelButton.disabled = true;
+        state.selected.clear();
+        renderSelectionState();
+        renderProgress();
+        await loadArticles();
+        showToast('Assessment cancelled', 'warning');
+        return;
+    }
     
     // Small delay before next batch
     if (queue.length > 0) {
@@ -867,11 +904,13 @@ async function processBatch(queue) {
     }
 }
 
+
+
 async function handleAssessSelected() {
     if (!state.selected.size || state.isAssessing) return;
 
     state.isAssessing = true;
-    // enable cancel button when starting
+    state.cancelRequested = false; // Reset cancellation flag when starting new assessment
     if (elements.cancelButton) elements.cancelButton.disabled = false;
     state.progress.total = state.selected.size;
     state.progress.completed = 0;
@@ -932,19 +971,25 @@ function wireEvents() {
     }
 
     if (elements.cancelButton) {
-        elements.cancelButton.addEventListener("click", async () => {
-            const confirmed = await showConfirmModal({
-                title: 'Cancel Assessments',
-                message: 'Cancel selected assessments? This will stop queued/running assessments.',
-                icon: 'fa-ban',
-                type: 'warning',
-                confirmText: 'Yes, Cancel',
-                confirmButtonClass: 'warning'
-            });
-            if (!confirmed) return;
-            await cancelAssessments();
+    elements.cancelButton.addEventListener("click", async () => {
+        const confirmed = await showConfirmModal({
+            title: 'Cancel Assessments',
+            message: 'Cancel selected assessments? This will stop queued/running assessments.',
+            icon: 'fa-ban',
+            type: 'warning',
+            confirmText: 'Yes, Cancel',
+            confirmButtonClass: 'warning'
         });
-    }
+        
+        if (!confirmed) return;
+        
+        // Set cancellation flag to stop the processing loop
+        state.cancelRequested = true;
+        
+        // Also send cancellation request to server
+        await cancelAssessments();
+    });
+}
 
     if (elements.deleteButton) {
         elements.deleteButton.addEventListener("click", async () => {
@@ -1050,27 +1095,29 @@ function wireEvents() {
     }
     
     // Metric cards click to filter
-    document.querySelectorAll('.metric-card').forEach((card) => {
-        card.addEventListener('click', () => {
-            if (card.classList.contains('metric-needs')) {
-                handleMetricClick('needs');
-            } else if (card.classList.contains('metric-assessed')) {
-                handleMetricClick('assessed');
-            } else if (card.classList.contains('metric-running')) {
-                handleMetricClick('running');
-            } else if (card.classList.contains('metric-errors')) {
-                handleMetricClick('errors');
-            } else if (card.classList.contains('metric-notassessed')) {
-                handleMetricClick('notassessed');
-            }
-        });
+document.querySelectorAll('.metric-card').forEach((card) => {
+    card.addEventListener('click', () => {
+        if (card.classList.contains('metric-total')) {
+            handleMetricClick('total');
+        } else if (card.classList.contains('metric-needs')) {
+            handleMetricClick('needs');
+        } else if (card.classList.contains('metric-assessed')) {
+            handleMetricClick('assessed');
+        } else if (card.classList.contains('metric-running')) {
+            handleMetricClick('running');
+        } else if (card.classList.contains('metric-errors')) {
+            handleMetricClick('errors');
+        } else if (card.classList.contains('metric-notassessed')) {
+            handleMetricClick('notassessed');
+        }
     });
+});
     
     // Setup keyboard shortcuts
     setupKeyboardShortcuts();
 }
 
-function showAssessmentDetails(articleId) {
+async function showAssessmentDetails(articleId) {
     const modalEl = document.getElementById('assessmentModal');
     const bsLib = window.bootstrap || globalThis.bootstrap;
     if (!bsLib || !bsLib.Modal) {
@@ -1429,7 +1476,38 @@ function showRewriteResult(result, articleId) {
     });
     
     modal.show();
+}async function cancelAssessments() {
+    try {
+        const articleIds = Array.from(state.selected);
+        if (articleIds.length === 0) {
+            // If no selection, cancel all running assessments
+            const runningArticles = state.articles
+                .filter(a => a.last_status === 'running')
+                .map(a => a.id);
+            
+            if (runningArticles.length === 0) {
+                showToast('No running assessments to cancel', 'info');
+                return;
+            }
+            
+            articleIds.push(...runningArticles);
+        }
+        
+        const result = await fetchJSON(API.cancel, {
+            method: 'POST',
+            body: JSON.stringify({ article_ids: articleIds })
+        });
+        
+        showToast(`Cancelled ${result.updated || 0} assessment(s)`, 'info');
+        
+        // Reload articles to reflect cancellation status
+        await loadArticles();
+    } catch (error) {
+        console.error('Cancel failed:', error);
+        showToast('Failed to cancel assessments', 'error');
+    }
 }
+
 
 async function bootstrap() {
     // Restore saved filters to UI
